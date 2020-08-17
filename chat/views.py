@@ -7,11 +7,13 @@ from rest_framework import status
 from .serializer import *
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
+from django.views import View
 from django.contrib.auth.models import User
 from .models import *
 from datetime import datetime
 from cases.models import case
 from user.serializers import *
+from user.models import *
 from .consumers import ChatConsumer
 import json
 
@@ -28,12 +30,21 @@ def case_client_flag(case_obj, user):
             return True
 
 
+def chat_user_flag(chat_obj, user):
+    for member in chat_obj.chat_members.all():
+        if user.id == member.id:
+            return True
+
+    for member in chat_obj.chat_admin.all():
+        if user.id == member.id:
+            return True
+
+
 def index(request):
     return render(request, 'chat/index.html', {})
 
 
 class case_room_auth(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, case_id):
         try:
@@ -74,7 +85,6 @@ class new_user_room(APIView):
 
 
 class existing_user_room(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, room_name):
         try:
@@ -88,6 +98,7 @@ class existing_user_room(APIView):
         token = Token.objects.get(key=request.POST['Token'])
         current_user = token.user
         current_chat = chat.objects.get(channel_number=room_name)
+        print(current_chat.chat_members.all())
         for user in current_chat.chat_members.all():
             if current_user.id == user.id:
                 flag = 1
@@ -96,6 +107,8 @@ class existing_user_room(APIView):
                 'room_name': room_name,
                 'user': current_user.id
             })
+        else:
+            return JsonResponse({'Message': 'Error Invalid authentication'}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, room_name):
         try:
@@ -109,6 +122,18 @@ class existing_user_room(APIView):
             return JsonResponse({"ERROR": "Chat does not exist"})
 
 
+class chat_msg_delete(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, msg_id):
+        message_entry = message.objects.get(pk=msg_id)
+        for user in message_entry.chat.chat_members.all():
+            if request.user == user:
+                message_entry.delete()
+                return JsonResponse({'Message': 'Deleted'}, status=status.HTTP_200_OK)
+        return JsonResponse({'Message': 'Error Invalid authentication'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class new_group_room(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -117,13 +142,12 @@ class new_group_room(APIView):
         new_chat.chat_admin.add(request.user)
         new_chat.save()
         new_hash = hash(str(new_chat.created_at))
-        new_chat.channel_number = new_hash
+        new_chat.channel_number = abs(new_hash)
         new_chat.save()
-        return JsonResponse({"Channel_number": new_hash})
+        return JsonResponse({"Channel_number": abs(new_hash)})
 
 
 class existing_group_room(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, room_name):
         try:
@@ -150,53 +174,93 @@ class existing_group_room(APIView):
                 })
         return JsonResponse({"ERROR": "Not a member of this group"})
 
-    def delete(self, request, room_name):
-        try:
-            chat_set = chat.objects.get(channel_number=room_name)
-            for user in chat_set.chat_admin.all():
-                if request.user.id == user.id:
-                    chat_set.delete()
-                    return JsonResponse({"Chat": "Deleted"})
-            return JsonResponse({"ERROR": "You do not have authority to delete this chat"})
-        except:
-            return JsonResponse({"ERROR": "Chat does not exist"})
-
 
 class group_members(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, room_name):
-        result = []
         new_chat = chat.objects.get(channel_number=room_name)
-        admin_set = new_chat.chat_admin.all()
-        chat_member_set = new_chat.chat_members.all()
-        serializer = UserSerializer(chat_member_set, many=True)
-        result.append({"members":serializer.data})
-        serializer = UserSerializer(admin_set, many=True)
-        result.append({"admin": serializer.data})
-        return JsonResponse(result, safe=False)
+        if chat_user_flag(new_chat, request.user):
+            dict2 = {'members': [], 'admins': []}
+            chat_member_set = new_chat.chat_members.all()
+            for user in chat_member_set:
+                profile_set = profile.objects.filter(user=user)
+                dict1 = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'image': None,
+                    'private': None
+                }
+                if len(profile_set) != 0:
+                    serializer = profile_image_serializer(profile_set[0])
+                    dict1['image'] = serializer.data
+                    dict1['private'] = profile_set[0].private
+                dict2['members'].append(dict1)
+
+            for user in new_chat.chat_admin.all():
+                profile_set = profile.objects.filter(user=user)
+                dict1 = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'image': None,
+                    'private': None
+                }
+                if len(profile_set) != 0:
+                    serializer = profile_image_serializer(profile_set[0])
+                    dict1['image'] = serializer.data
+                    dict1['private'] = profile_set[0].private
+                dict2['admins'].append(dict1)
+
+            return JsonResponse(dict2, status=status.HTTP_200_OK)
+        return JsonResponse({'Message': 'Error Unauthorized access'}, status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, room_name):
         new_chat = chat.objects.get(channel_number=room_name)
         for user in new_chat.chat_admin.all():
             if request.user.id == user.id:
-                for user_id in request.data['group_members']:
+                for user_id in request.data['group_member']:
                     user = User.objects.get(pk=user_id)
                     new_chat.chat_members.add(user)
-                    return JsonResponse({"Chat Members": "Added"})
+                return JsonResponse({"Chat Members": "Added"}, status=status.HTTP_200_OK)
+            return JsonResponse({'Message': 'Error you are not authorized to add members in the group'},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({"ERROR": "No Authorization to add members"})
+            return JsonResponse({"ERROR": "No Authorization to add members"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, room_name):
-        new_chat = chat.objects.get(chat_name=room_name)
-        for user in new_chat.chat_admin.all():
-            if request.user.id == user.id:
-                for user_id in request.data['group_members']:
-                    user = User.objects.get(pk=user_id)
-                    new_chat.chat_members.remove(user)
-                    return JsonResponse({"Chat Members": "Removed"})
-        else:
-            return JsonResponse({"ERROR": "No Authorization to remove members"})
+        current_chat = chat.objects.get(channel_number=room_name)
+        flag = 0
+
+        for chat_entry in request.user.chat_admin.all():
+            if chat_entry == current_chat:
+                flag = 1
+                break
+
+        if request.data['group_member'] == request.user.id or flag == 1:
+            for user in current_chat.chat_admin.all():
+                if user.id == request.data['group_member']:
+                    current_chat.chat_admin.remove(user)
+                    current_chat.save()
+                    if len(current_chat.chat_admin.all()) == 0:
+                        if len(current_chat.chat_members.all()) == 0:
+                            current_chat.delete()
+                            return JsonResponse({"Chat": "Deleted"}, status=status.HTTP_200_OK)
+                        else:
+                            current_chat.chat_admin.add(current_chat.chat_members.all()[0])
+                            current_chat.chat_members.remove(current_chat.chat_members.all()[0])
+                            current_chat.save()
+                    return JsonResponse({"Chat": "Left"}, status=status.HTTP_200_OK)
+
+            for user in current_chat.chat_members.all():
+                if user.id == request.data['group_member']:
+                    current_chat.chat_members.remove(user)
+                    current_chat.save()
+                    return JsonResponse({'Message': 'Member removed'}, status=status.HTTP_200_OK)
+
+            return JsonResponse({'Message': 'Error group_member not found'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'Message': 'Error you are not admin of the case'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class group_admin(APIView):
@@ -204,13 +268,20 @@ class group_admin(APIView):
 
     def post(self, request, room_name):
         current_chat = chat.objects.get(channel_number=room_name)
-        for admin in current_chat.chat_admin.all():
-            if request.user.id == admin.id:
-                for new_user in request.data['add_admin']:
-                    for user in current_chat.chat_members.all():
-                        if new_user == user.id:
-                            user_obj = User.objets.get(pk=new_user)
-                            current_chat.chat_members.add(user_obj)
+        for chat_entry in request.user.chat_admin.all():
+            if chat_entry == current_chat:
+                for user in current_chat.chat_members.all():
+                    if user.id == request.data['admin']:
+                        current_chat.chat_members.remove(user)
+                        current_chat.chat_admin.add(user)
+                        current_chat.save()
+                        return JsonResponse({'Message': 'Admin added'}, status=status.HTTP_200_OK)
+                    else:
+                        return JsonResponse({'Message': 'Error user is not already an admin'},
+                                            status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse({'Message': 'Error you are not admin of the case'},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
 
 class get_case_chat(APIView):

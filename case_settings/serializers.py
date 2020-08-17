@@ -19,7 +19,8 @@ class invoice_payment_serializer(serializers.ModelSerializer):
     class Meta:
         model = invoice_payment
         fields = ['id',
-                  'payment_due_date',
+                  'due_date',
                   'payment',
                   'status']
+
 

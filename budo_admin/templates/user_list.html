@@ -28,23 +28,24 @@ The above copyright notice and this permission notice shall be included in all c
   <link href="../assets/css/material-dashboard.css?v=2.1.2" rel="stylesheet" />
   <!-- CSS Just for demo purpose, don't include it in your project -->
   <link href="../assets/demo/demo.css" rel="stylesheet" />
+  
 </head>
 
 <body class="">
-  <div class="wrapper ">
-    <div class="sidebar" data-color="purple" data-background-color="white" data-image="../assets/img/sidebar-1.jpg">
+  <div class="wrapper "style = "background: white" >
+    <div class="sidebar"   data-image="../assets/img/sidebar-1.jpg" style = "background-color: #E6E6FA ">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
         Tip 2: you can also add an image using data-image tag
     -->
-      <div class="logo"><a href="http://www.creative-tim.com" class="simple-text logo-normal" style = "background-color: #ADD8E6 ">
-          BUDO
-        </a></div>
-      <div class="sidebar-wrapper" style = "background-color: #ADD8E6 ">
-        <ul class="nav">
+      <div class="logo" style="  background-color: #E6E6FA">
+	    &emsp;&emsp;&emsp;<img src = "../assets/img/budo_logoblue.png" style= "width: 150px; height:30px; background-color: #E6E6FA">
+      </div>
+      <div class="sidebar-wrapper" style = "background-color: #E6E6FA ">
+        <ul class="nav" style = "font-weight: bold ">
           <li class="nav-item  "  style = "font-weight: bold ">
-            <a class="nav-link" href="./dashboard.html">
+            <a class="nav-link" href="{% url 'dashboard' %}">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
@@ -55,8 +56,8 @@ The above copyright notice and this permission notice shall be included in all c
               <p>User Profile</p>
             </a>
           </li>
-          <li class="nav-item active " style = "font-weight: bold ">
-            <a class="nav-link" href="{% url 'all_users' %}">
+          <li class="nav-item active" style = "font-weight: bold ">
+            <a class="nav-link" href="{% url 'all_users' %}" style = "background: black; color: white">
               <i class="material-icons">content_paste</i>
               <p>User List</p>
             </a>
@@ -73,10 +74,10 @@ The above copyright notice and this permission notice shall be included in all c
               <p>Cases</p>
             </a>
           </li>
-          <li class="nav-item " style = "font-weight: bold ">
-            <a class="nav-link" href="./map.html">
-              <i class="material-icons">location_ons</i>
-              <p>Maps</p>
+          <li class="nav-item ">
+            <a class="nav-link" href="{% url 'revenue' %}">
+              <i class="material-icons">store</i>
+              <p>Revenue</p>
             </a>
           </li>
           <li class="nav-item " style = "font-weight: bold ">
@@ -91,19 +92,13 @@ The above copyright notice and this permission notice shall be included in all c
               <p>RTL Support</p>
             </a>
           </li>
-          <li class="nav-item active-pro " style = "font-weight: bold ">
-            <a class="nav-link" href="./upgrade.html">
-              <i class="material-icons">unarchive</i>
-              <p>Upgrade to PRO</p>
-            </a>
-          </li>
         </ul>
       </div>
     </div>
     <div class="main-panel">
       <!-- Navbar -->
       <nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top ">
-        <div class="container-fluid">
+        <div class="container-fluid" >
           <div class="navbar-wrapper">
             <a class="navbar-brand" href="javascript:;">User List</a>
           </div>
@@ -164,36 +159,60 @@ The above copyright notice and this permission notice shall be included in all c
       <!-- End Navbar -->
       <div class="content">
         <div class="container-fluid">
+		<div class="row">
+            <div class="col-lg-3 col-md-6 col-sm-6">
+			<a href = "{% url 'all_users' %}">
+              <div class="card card-stats">
+                <div class="card-header card-header-warning card-header-icon">
+                  <div class="card-icon" style = "background: #483d8b">
+                    <i class="material-icons" >content_copy</i>
+                  </div>
+                  <p class="card-category">New Users</p>
+                  <h3 class="card-title">+ {{new_users|length}}
+                  </h3>
+                </div>
+                <div class="card-footer">
+                  <div class="stats">
+                    <i class="material-icons">alarm</i> Last 24 Hours
+                  </div>
+                </div>
+              </div>
+			  </a>
+            </div>
+			</div>
           <div class="row">
             <div class="col-md-12">
-              <div class="card" >
-                <div class="card-header card-header-primary" >
-                  <h4 class="card-title " >User Table</h4>
+              <div class="card" style = "background-color: #f1f1f1" >
+                <div class="card-header card-header-primary" style = "background: #483d8b" >
+                  <h4 class="card-title" style = " font-weight: bold"  >User Table</h4>
                   <p class="card-category"> List Of All The Active Users</p>
                 </div>
-                <div class="card-body">
-                  <div class="table-responsive">
-                    <table class="table">
+                <div class="card-body" >
+                  <div class="table-responsive" style = "max-height: 500px ;overflow: auto;">
+                    <table class="table table-hover">
                       <thead class=" text-primary" >
-                        <th style="font-weight:bold">
-                          ID
+                        <th>
+                          <label class="bmd-label-floating">ID</label>
                         </th>
-                        <th style="font-weight:bold">
-                          USERNAME
+                        <th>
+                          <label class="bmd-label-floating">Username</label>
                         </th>
-                        <th style="font-weight:bold">
-                          EMAIL
+                        <th>
+                          <label class="bmd-label-floating">Email</label>
                         </th>
-                        <th style="font-weight:bold">
-                          STATUS
-                        </th>                 
+                        <th>
+                          <label class="bmd-label-floating">Date Joined</label>
+                        </th>  
+						<th>
+                          <label class="bmd-label-floating">Subscription</label>
+                        </th>
                       </thead>
                       <tbody>
 						{% for element in pop %}
                         <tr>
                           {% for key, value in element.items %}
 							<td>								
-								<a href = "{% url 'get_user' element.id %}" style = "color: black">
+								<a href = "{% url 'get_user' element.id %}" style = "color: black; font-size: 120%; font-family: Georgia, serif;">
 								{{value}}
 								</a>
 							</td>
@@ -207,7 +226,7 @@ The above copyright notice and this permission notice shall be included in all c
               </div>
             </div>
            
-      <footer class="footer">
+      <footer class="footer" >
         <div class="container-fluid">
           <nav class="float-left">
             <ul>
@@ -244,7 +263,7 @@ The above copyright notice and this permission notice shall be included in all c
       </footer>
     </div>
   </div>
-  <div class="fixed-plugin">
+  <div class="fixed-plugin" >
     <div class="dropdown show-dropdown">
       <a href="#" data-toggle="dropdown">
         <i class="fa fa-cog fa-2x"> </i>

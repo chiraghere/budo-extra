@@ -17,8 +17,6 @@ class subscription_serializer(serializers.ModelSerializer):
                   'case_member',
                   'case_clients',
                   'task',
-                  'task_members',
                   'storage',
-                  'time_period',
                   'monthly_amount',
                   'yearly_amount']

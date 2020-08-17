@@ -31,26 +31,26 @@ The above copyright notice and this permission notice shall be included in all c
 </head>
 
 <body class="">
-  <div class="wrapper ">
-    <div class="sidebar" data-color="purple" data-background-color="white" data-image="../assets/img/sidebar-1.jpg">
+  <div class="wrapper " style = "background: white">
+    <div class="sidebar" style = "background-color: #E6E6FA ">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
         Tip 2: you can also add an image using data-image tag
     -->
-      <div class="logo"><a href="http://www.creative-tim.com" class="simple-text logo-normal">
-          Creative Tim
-        </a></div>
-      <div class="sidebar-wrapper">
-        <ul class="nav">
+      <div class="logo" style="  background-color: #E6E6FA">
+	    &emsp;&emsp;&emsp;<img src = "../assets/img/budo_logoblue.png" style= "width: 150px; height:30px; background-color: #E6E6FA">
+      </div>
+      <div class="sidebar-wrapper" style = "background-color: #E6E6FA ">
+        <ul class="nav" style = "font-weight: bold ">
           <li class="nav-item  ">
-            <a class="nav-link" href="./dashboard.html">
+            <a class="nav-link" href="{% url 'dashboard' %}">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
           </li>
           <li class="nav-item active ">
-            <a class="nav-link" href="{% url 'get_user_profile' %}">
+            <a class="nav-link" href="{% url 'get_user_profile' %}" style = "background: black; color: white">
               <i class="material-icons">person</i>
               <p>User Profile</p>
             </a>
@@ -74,9 +74,9 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="./map.html">
-              <i class="material-icons">location_ons</i>
-              <p>Maps</p>
+            <a class="nav-link" href="{% url 'revenue' %}">
+              <i class="material-icons">store</i>
+              <p>Revenue</p>
             </a>
           </li>
           <li class="nav-item ">
@@ -166,9 +166,9 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-8">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title">Search Profile</h4>
+              <div class="card" style = "background-color: #f1f1f1">
+                <div class="card-header card-header-primary" style = "background: #483d8b">
+                  <h4 class="card-title" style = " font-weight: bold">Search Profile</h4>
                   <p class="card-category">Enter any of the following details</p>
                 </div>
                 <div class="card-body">
@@ -192,7 +192,7 @@ The above copyright notice and this permission notice shall be included in all c
                           <input type="email" class="form-control" name = "email" id = "email">
                         </div>
                       </div>         										                                          
-                    <input type="submit" class="btn btn-primary pull-right" value = "Submit">
+                    <input type="submit" class="btn btn-primary pull-right" value = "Submit" style="background-color:#483d8b">
                     <div class="clearfix"></div>
                   </form>
                 </div>

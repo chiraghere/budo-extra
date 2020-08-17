@@ -1,0 +1,68 @@
+CASE ID:  1
+Case Name:  case1
+Case Members:  chirag, 
+Case Clients:  None
+
+ID: 1
+Task Name:  case1
+
+Details:  
+Task Member:  chirag, 
+Admin:  chirag
+Created At:  2020-08-01 11:19:19.393053
+Last Updated At:  2020-08-01 11:19:19.393053
+Billing Type:  non billing
+
+
+ID: 2
+Task Name:  case1
+
+Details:  
+Task Member:  chirag, 
+Admin:  chirag
+Created At:  2020-08-01 11:20:31.264526
+Last Updated At:  2020-08-01 11:20:31.264526
+Billing Type:  non billing
+
+
+ID: 3
+Task Name:  ctask2
+
+Details:  
+Task Member:  chirag, 
+Admin:  chirag
+Created At:  2020-08-01 11:20:43.551869
+Last Updated At:  2020-08-01 11:20:43.551869
+Billing Type:  non billing
+
+
+ID: 4
+Task Name:  ctask2
+
+Details:  
+Task Member:  chirag, 
+Admin:  chirag
+Created At:  2020-08-01 11:22:22.232266
+Last Updated At:  2020-08-01 11:23:05.213560
+Billing Type:  billing
+
+Comments :
+2020-08-03 06:12:48.401996 chirag->hell
+2020-08-03 09:01:08.057405 chirag->heya
+
+Checklists :
+  checklist: 
+    item2
+
+
+ID: 5
+Task Name:  mytask
+
+Details:  
+Task Member:  chirag, 
+Admin:  chirag
+Created At:  2020-08-03 08:20:46.953276
+Last Updated At:  2020-08-03 08:20:46.953276
+Billing Type:  billing
+
+

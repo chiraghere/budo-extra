@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from cases.models import *
 from cases.serializers import *
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from chat.models import *
 from chat.serializer import *
 import json
@@ -26,11 +26,27 @@ from .serializers import *
 
 # Create your views here.
 
+def case_user_flag(case_obj, user):
+    for member in case_obj.case_members.all():
+        if user.id == member.id:  # (flag) check if the user is member of the case
+            return True
+
+
+def case_client_flag(case_obj, user):
+    for member in case_obj.case_clients.all():
+        if user.id == member.id:  # (flag) check if the user is client of the case
+            return True
+
+
+def task_user_flag(task_obj, user):
+    for member in task_obj.task_members.all():
+        if user.id == member.id:  # (flag) check if the user is member of the task
+            return True
 
 def get_all_docs(case_id, zip1):
     current_case = case.objects.get(pk=case_id)
     try:
-        folder_path = 'media/media/' + str(current_case.case_name) + '/documents/'
+        folder_path = 'media/' + str(current_case.case_name) + 'doc' + '/documents/'
         var = os.listdir(folder_path)
         for user in var:
             folder_path = folder_path + user + '/'
@@ -44,7 +60,7 @@ def get_all_docs(case_id, zip1):
 def get_all_img(case_id, zip1):
     current_case = case.objects.get(pk=case_id)
     try:
-        folder_path = 'media/media/' + str(current_case.case_name) + '/images/'
+        folder_path = 'media/' + str(current_case.case_name) + 'img' + '/images/'
         var = os.listdir(folder_path)
         for user in var:
             folder_path = folder_path + user + '/'
@@ -173,19 +189,110 @@ class index(APIView):
         return JsonResponse({'done': 'done'})
 
 
-def invoice_category(request, invoice_obj, new_cost):
-    if invoice_obj.category == 'single':
-        payment = invoice_payment.objects.create(invoice=invoice_obj, payment=new_cost)
-        payment.save()
-    elif invoice_obj.category == 'equal':
-        payment_cost = new_cost / int(invoice_obj.frequency)
-        for loop in range(0, int(invoice_obj.frequency)):
-            payment = invoice_payment.objects.create(invoice=invoice_obj, payment=payment_cost)
+def invoice_category(request, new_cost, current_task):
+    if request.data.get('category') == 'single' or request.data.get('category') is None:
+        if request.data.get('frequency') == 1 or request.data.get('frequency') is None:
+            invoice = task_invoice.objects.create(task=current_task, total_cost=new_cost)
+            x = invoice.save()
+
+            payment = invoice_payment.objects.create(invoice=invoice, payment=new_cost)
             payment.save()
-    elif invoice_obj.category == 'unequal':
-        for loop in range(0, int(request.data['frequency'])):
-            payment = invoice_payment.objects.create(invoice=invoice_obj)
-            payment.save()
+            return invoice.id
+        return {"Message": "Error When Category is Single frequency must be equal to 1"}
+
+    elif request.data.get('category') == 'equal':
+        if 1 < request.data.get('frequency') <= 10:
+            invoice = task_invoice.objects.create(task=current_task, total_cost=new_cost,
+                                                  category=request.data.get('category'),
+                                                  frequency=request.data.get('frequency'))
+            x = invoice.save()
+
+            loop = 0
+            while loop < int(request.data.get('frequency')):
+                cost = new_cost / int(request.data.get('frequency'))
+                payment_obj = invoice_payment.objects.create(invoice=invoice, payment=cost)
+                payment_obj.save()
+                loop = loop + 1
+            return invoice.id
+        return {"Message": "Error when category is equal frequency must be greater than 1"}
+
+    elif request.data.get('category') == 'random':
+        total_payment = 0
+        payment_count = 0
+        for element in request.data.get('payment'):
+            if element == 0:
+                return {'Message': 'Payments must be non zero'}
+            total_payment = total_payment + element
+            payment_count = payment_count + 1
+        if total_payment != new_cost:
+            return {'Message': 'Sum of the payments must be equal to cost of the invoice'}
+        if payment_count != int(request.data.get('frequency')):
+            return {'Message': 'Payments must be equal to the frequency'}
+
+        if 1 < request.data.get('frequency') <= 10:
+            invoice = task_invoice.objects.create(task=current_task, total_cost=new_cost,
+                                                  category=request.data.get('category'),
+                                                  frequency=request.data.get('frequency'))
+            x = invoice.save()
+
+            loop = 0
+            while loop < int(request.data.get('frequency')):
+                payment_obj = invoice_payment.objects.create(invoice=invoice, payment=request.data['payment'][loop])
+                payment_obj.save()
+                loop = loop + 1
+            return invoice.id
+        return {"Message": "Error when category is random frequency must be greater than 1 and less than or equal to 10"}
+
+    else:
+        return {"Message": "Error Category must be one of the following SINGLE, EQUAL, RANDOM"}
+
+
+def display_invoice(invoice_id):
+    #       RESPONSE OF INVOICE
+
+    invoice = task_invoice.objects.get(pk=invoice_id)
+    dict1 = {
+        'id': invoice.id, 'task': {
+            'id': invoice.task.id, 'name': invoice.task.task_name,
+            'billing_type': invoice.task.billing_type, 'invoice_type': invoice.task.invoice_type,
+            'cost': invoice.task.cost,
+            'case': {'id': invoice.task.task_case.id, 'name': invoice.task.task_case.case_name,
+                     'admin': {'id': invoice.task.task_case.created_by.id,
+                               'username': invoice.task.task_case.created_by.username,
+                               'image': None,
+                               'private': None}
+                     }
+        },
+        'total_cost': invoice.total_cost, 'frequency': invoice.frequency, 'category': invoice.category,
+        'created_at': invoice.created_at
+    }
+
+    user_profile = profile.objects.filter(user=invoice.task.task_case.created_by)
+    if len(user_profile) != 0:
+        serializer = profile_image_serializer(user_profile, many=True)
+        dict1['task']['case']['admin']['image'] = serializer.data
+        dict1['task']['case']['admin']['private'] = user_profile[0].private
+
+    #       CASE CLIENTS IN INVOICE
+
+    result = []
+    for user in invoice.task.task_case.case_clients.all():
+        dict2 = {'id': user.id, 'username': user.username, 'image': None, 'private': None}
+        user_profile = profile.objects.filter(user=user)
+        if len(user_profile) != 0:
+            serializer = profile_image_serializer(user_profile, many=True)
+            dict1['task']['case']['admin']['image'] = serializer.data
+            dict1['task']['case']['admin']['private'] = user_profile[0].private
+        result.append(dict2)
+    dict1['task']['case']['clients'] = result
+
+    #       PAYMENT SET IN INVOICE
+
+    payment_obj = invoice_payment.objects.filter(invoice=invoice)
+    serializer = invoice_payment_serializer(payment_obj, many=True)
+    dict1['Payments'] = serializer.data
+
+    return dict1
 
 
 class task_invoice_view(APIView):
@@ -193,74 +300,64 @@ class task_invoice_view(APIView):
 
     def get(self, request, task_id):
         current_task = task.objects.get(pk=task_id)
-
-        if request.user.id == current_task.task_case.created_by.id:
-
-            timer_set = timer.objects.filter(task=current_task)
-
-            if current_task.invoice_type == 'hourly' and timer_set[len(timer_set) - 1].status == 'end':
-                time_diff = 0
-                for interval in timer_set:
-                    value = interval.start_time - interval.end_time
-                    time_diff = time_diff - float(value.seconds) / 3600 - float(value.days) * 24
-
-                total_cost = float(current_task.cost) * time_diff
-
-                invoice = task_invoice.objects.create(task=current_task, total_cost=total_cost)
-                invoice.save()
-                invoice_id = invoice.id
-
-                invoice_category(request, invoice, invoice.total_cost)
-
-                queryset = task_invoice.objects.get(pk=invoice_id)
-                serializer = task_invoice_serializer(queryset)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-            elif current_task.invoice_type == 'onetime':
-                invoice = task_invoice.objects.create(task=current_task, total_cost=current_task.cost)
-                invoice.save()
-                invoice_id = invoice.id
-
-                invoice_category(request, invoice, invoice.total_cost)
-
-                queryset = task_invoice.objects.get(pk=invoice_id)
-                serializer = task_invoice_serializer(queryset)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-            else:
-                return JsonResponse({
-                    "Error": "Either Timer is still active OR some task details are missing(Eg : invoice_type or cost "})
-        else:
-            return JsonResponse({"Error": "you are not a member of this case"})
-
-
-class show_invoice(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, task_id):
-        current_task = task.objects.get(pk=task_id)
         if case_user_flag(current_task.task_case, request.user) or case_client_flag(current_task.task_case,
                                                                                     request.user):
-            result = []
             try:
                 task_invoice_set = task_invoice.objects.get(task=current_task)
-                payment_set = invoice_payment.objects.filter(invoice=task_invoice_set)
-                serializer = task_invoice_serializer(task_invoice_set)
-                payment_serializer = invoice_payment_serializer(payment_set, many=True)
-                json = {'Invoice': serializer.data, 'Payments': payment_serializer.data}
-                result.append(json)
-                return JsonResponse(result, safe=False)
+                dict1 = display_invoice(task_invoice_set.id)
+                return JsonResponse(dict1, status=status.HTTP_200_OK)
             except:
-                return JsonResponse({"ERROR": "No Invoice Exists"})
+                return JsonResponse({"Message": "Error No Invoice Exists"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return JsonResponse({"Error": "you are not a member of this case"})
+            return JsonResponse({"Message": "Error you are not a member of this case"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, task_id):
+    def post(self, request, task_id):
         current_task = task.objects.get(pk=task_id)
+
+        try:
+            current_invoice = task_invoice.objects.get(task=current_task)
+            return JsonResponse({'Message': 'Error Invoice is already created for this task'},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except:
+            pass
+
         if request.user.id == current_task.task_case.created_by.id:
-            task_invoice_set = task_invoice.objects.get(task=current_task)
-            task_invoice_set.delete()
-            return JsonResponse({"Invoice": "Deleted"})
+
+            if current_task.completed is not None:
+                timer_set = timer.objects.filter(task=current_task)
+
+                if current_task.invoice_type == 'hourly':
+                    time_diff = 0
+                    for interval in timer_set:
+                        value = interval.start_time - interval.end_time                                     # calculating total cost for the invoice
+                        time_diff = time_diff - float(value.seconds) / 3600 - float(value.days) * 24
+                    total_cost = float(current_task.cost) * time_diff
+
+                    response = invoice_category(request, total_cost, current_task)
+                    if type(response) == int:
+                        pass
+                    else:
+                        return JsonResponse(response, safe=False, status=status.HTTP_400_BAD_REQUEST)
+
+                    dict1 = display_invoice(response)
+                    return Response(dict1, status=status.HTTP_201_CREATED)
+
+                elif current_task.invoice_type == 'onetime':
+
+                    response = invoice_category(request, current_task.cost, current_task)
+                    if type(response) == int:
+                        pass
+                    else:
+                        return JsonResponse(response, safe=False, status=status.HTTP_400_BAD_REQUEST)
+
+                    dict1 = display_invoice(response)
+                    return Response(dict1, status=status.HTTP_201_CREATED)
+                else:
+                    return JsonResponse({"Message": "Error This task has billing_type as non billing therefore cannot generate invoice"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse({'Message': 'Error to create invoice task must be completed'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({"Error": "you are not a member of this case"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class invoice_payment_set(APIView):
@@ -268,45 +365,16 @@ class invoice_payment_set(APIView):
 
     def get(self, request, task_id):
         current_task = task.objects.get(pk=task_id)
-        current_invoice = task_invoice.objects.get(task=current_task)
-
-        payment_entry_set = invoice_payment.objects.filter(invoice=current_invoice)
-
-        serializer = invoice_payment_serializer(payment_entry_set, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, task_id):
-        current_task = task.objects.get(pk=task_id)
-        current_invoice = task_invoice.objects.get(task=current_task)
-
-        payment_entry_set = invoice_payment.objects.filter(invoice=current_invoice)
-        remaining_payment = float(current_invoice.total_cost)
-        completed_frequencies = 0
-
-        if request.data['category'] == 'single' and request.data['frequency'] > 1:
-            return JsonResponse({"ERROR": "Category single cannot have frequency more than 1"})
-
-        if request.data['category'] != current_invoice.category or request.data['frequency'] != current_invoice.frequency:
-            for element in payment_entry_set:
-                if element.status:
-                    remaining_payment = remaining_payment - element.payment
-                    completed_frequencies = completed_frequencies + 1
-                else:
-                    element.delete()
-
-                if request.data['category'] != current_invoice.category:
-                    current_invoice.category = request.data['category']
-                    current_invoice.save()
-
-                if request.data['frequency'] != current_invoice.frequency:
-                    if completed_frequencies <= request.data['frequency']:
-                        current_invoice.frequency = request.data['frequency']
-                        current_invoice.save()
-
-                invoice_category(request, current_invoice, remaining_payment)
-
-            return JsonResponse({"Payments Model": "Updated"})
-        return JsonResponse({"Payments Model": "No Change"})
+        if case_user_flag(current_task.task_case, request.user) or case_client_flag(current_task.task_case,
+                                                                                    request.user):
+            try:
+                current_invoice = task_invoice.objects.get(task=current_task)
+                payment_entry_set = invoice_payment.objects.filter(invoice=current_invoice)
+                serializer = invoice_payment_serializer(payment_entry_set, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            except:
+                return JsonResponse({'Message': 'Error Invoice for this task does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'Message': 'Error you are not member of this case'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class payment_status(APIView):
@@ -316,6 +384,7 @@ class payment_status(APIView):
         payment_entry = invoice_payment.objects.get(pk=payment_id)
         if request.user.id == payment_entry.invoice.task.task_case.created_by.id:
             payment_entry.status = True
+            payment_entry.save()
             return JsonResponse({"Payment": "Status True, Payment Done"})
         return JsonResponse({"ERROR": "No Authorization"})
 
@@ -323,20 +392,111 @@ class payment_status(APIView):
 class payment_due_date(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, task_id):
-        current_task = task.objects.get(pk=task_id)
-        current_invoice = task_invoice.objects.get(task=current_task)
+    def get(self, request, payment_id):
+        payment_entry = invoice_payment.objects.get(pk=payment_id)
+        if case_user_flag(payment_entry.invoice.task.task_case, request.user) or case_client_flag(payment_entry.invoice.task.task_case, request.user):
+            serializer = invoice_payment_serializer(payment_entry)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        payment_set = invoice_payment.objects.filter(invoice=current_invoice)
+    def post(self, request, payment_id):
+        payment_entry = invoice_payment.objects.get(pk=payment_id)
 
-        try:
-            for (entry, due_date) in zip(payment_set, request.data['due_date']):
-                entry.due_date = due_date
-                entry.save()
-        except:
-            return JsonResponse({"ERROR": "You entered more due dates than frequencies"})
+        if case_user_flag(payment_entry.invoice.task.task_case, request.user):
+            invoice_entry = payment_entry.invoice
+            all_payments = invoice_payment.objects.filter(invoice=invoice_entry)
+            count = -1
 
-        return JsonResponse({"Payment": "due_date added"})
+            if invoice_entry.category != 'single':
+                for element in all_payments:
+                    if element == payment_entry:
+                        break
+                    else:
+                        count = count + 1
+
+                try:
+                    datetime_object = datetime.strptime(request.data['due_date'], '%Y-%m-%d')
+                except:
+                    return JsonResponse({'Message': 'Error Due date must be in format %Y-%m-%d'}, status=status.HTTP_400_BAD_REQUEST)           # adding due_date
+                if datetime_object.date() > date.today():
+                    if count == -1 or (all_payments[count].due_date is not None and all_payments[count].due_date < datetime_object.date()):
+                        payment_entry.due_date = datetime_object.date()
+                        payment_entry.save()
+                        serializer = invoice_payment_serializer(payment_entry)
+                        return Response(serializer.data, status=status.HTTP_200_OK)
+                    else:
+                        return JsonResponse({'Message': 'Error Due date cannot be behind the previous payment due_date'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return JsonResponse({'Message': 'Error due_date cannot be behind current date'}, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+                try:
+                    datetime_object = datetime.strptime(request.data['due_date'], '%Y-%m-%d')
+                except:
+                    return JsonResponse({'Message': 'Error Due date must be in format %Y-%m-%d'}, status=status.HTTP_400_BAD_REQUEST)           # adding due_date
+                if datetime_object.date() > date.today():
+                    payment_entry.due_date = datetime_object.date()
+                    payment_entry.save()
+                    serializer = invoice_payment_serializer(payment_entry)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return JsonResponse({'Message': 'Error due_date cannot be behind current date'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class user_invoice(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        member_result = []
+        client_result = []
+        dict1 = {'member': {'paid': [], 'unpaid': []}, 'client': {'paid': [], 'unpaid': []}}
+        case_set = request.user.case_members.all()
+        for case_element in case_set:
+            task_set = task.objects.filter(task_case=case_element)
+            for task_element in task_set:
+                try:
+                    invoice_element = task_invoice.objects.get(task=task_element)
+                    member_result.append(invoice_element)
+                except:
+                    pass
+
+        for invoice_element in member_result:
+            payment_set = invoice_payment.objects.filter(invoice=invoice_element)
+            inv_serializer = task_invoice_serializer(invoice_element)
+            pay_serializer = invoice_payment_serializer(payment_set, many=True)
+            dict2 = inv_serializer.data
+            dict2['payments'] = pay_serializer.data
+
+            if len(payment_set) != 0:
+                if payment_set[len(payment_set)-1].status:
+                    dict1['member']['paid'].append(dict2)
+                else:
+                    dict1['member']['unpaid'].append(dict2)
+
+        case_set = request.user.case_clients.all()
+        for case_element in case_set:
+            task_set = task.objects.filter(task_case=case_element)
+            for task_element in task_set:
+                try:
+                    invoice_element = task_invoice.objects.get(task=task_element)
+                    client_result.append(invoice_element)
+                except:
+                    pass
+
+        for invoice_element in client_result:
+            payment_set = invoice_payment.objects.filter(invoice=invoice_element)
+            inv_serializer = task_invoice_serializer(invoice_element)
+            pay_serializer = invoice_payment_serializer(payment_set, many=True)
+            dict2 = inv_serializer.data
+            dict2['payments'] = pay_serializer.data
+
+            if len(payment_set) != 0:
+                if payment_set[len(payment_set)-1].status:
+                    dict1['client']['paid'].append(dict2)
+                else:
+                    dict1['client']['unpaid'].append(dict2)
+
+        return JsonResponse(dict1, status=status.HTTP_200_OK)
+
 
 
 

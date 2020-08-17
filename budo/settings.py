@@ -24,12 +24,14 @@ SECRET_KEY = ')kl+dv+=b%jt6ygma%n69hzz)yyk_nknimfll2v%+5=#6a2ju^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'budo-test.herokuapp.com']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'whitenoise.runserver_nostatic',
+    'rest_framework_swagger',
     'budo_admin',
     'case_settings',
     'channels',
@@ -56,6 +58,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,13 +69,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ]
-}
+CORS_ORIGIN_ALLOW_ALL = True
+
+REST_FRAMEWORK = dict(DEFAULT_AUTHENTICATION_CLASSES=[
+    'rest_framework.authentication.TokenAuthentication',
+    'rest_framework.authentication.BasicAuthentication',
+    'rest_framework.authentication.SessionAuthentication',
+], DEFAULT_SCHEMA_CLASS='rest_framework.schemas.coreapi.AutoSchema')
 
 ROOT_URLCONF = 'budo.urls'
 
@@ -169,3 +172,4 @@ STATICFILES_DIRS = (
 )
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+

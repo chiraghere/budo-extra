@@ -30,21 +30,33 @@ The above copyright notice and this permission notice shall be included in all c
   <link href="../assets/demo/demo.css" rel="stylesheet" />
 </head>
 
+<style>
+
+.add_sub{
+	color:#483d8b;
+	opacity: 0.8;
+	font-size: 18px;
+		}
+		
+a:hover {opacity: 10; color : #483d8b}
+
+</style>
+
 <body class="">
-  <div class="wrapper ">
-    <div class="sidebar" data-color="purple" data-background-color="white" data-image="../assets/img/sidebar-1.jpg">
+  <div class="wrapper " style = "background: white">
+    <div class="sidebar"  style = "background-color: #E6E6FA ">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
         Tip 2: you can also add an image using data-image tag
     -->
-      <div class="logo"><a href="http://www.creative-tim.com" class="simple-text logo-normal">
-          Creative Tim
-        </a></div>
-      <div class="sidebar-wrapper">
-        <ul class="nav">
-          <li class="nav-item  ">
-            <a class="nav-link" href="./dashboard.html">
+      <div class="logo" style="  background-color: #E6E6FA">
+	    &emsp;&emsp;&emsp;<img src = "../assets/img/budo_logoblue.png" style= "width: 150px; height:30px; background-color: #E6E6FA">
+      </div>
+      <div class="sidebar-wrapper" style = "background-color: #E6E6FA ">
+        <ul class="nav" style = "font-weight: bold ">
+          <li class="nav-item " >
+            <a class="nav-link" href="{% url 'dashboard' %}">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
@@ -62,7 +74,7 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link" href="{% url 'subscription' %}">
+            <a class="nav-link" href="{% url 'subscription' %}" style = "background: black; color: white">
               <i class="material-icons">library_books</i>
               <p>Subscription</p>
             </a>
@@ -74,9 +86,9 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="./map.html">
-              <i class="material-icons">location_ons</i>
-              <p>Maps</p>
+            <a class="nav-link" href="{% url 'revenue' %}" s>
+              <i class="material-icons">store</i>
+              <p>Revenue</p>
             </a>
           </li>
           <li class="nav-item ">
@@ -172,57 +184,90 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
 		<div class>
 		<form>
-			<a href = "{% url 'add_subscription' %}" style= "font-weight: bold; font-size: 125%;" >Add Subscription</a>
+			<label class="bmd-label-floating"  >
+			<a href="{% url 'add_subscription' %}" class= "add_sub">
+              <i class="material-icons">add</i>
+              New Subscription
+            </a>
+			</label>
 		</form>
 	  </div>
+		<div class="row">
+		<div class="col-lg-3 col-md-6 col-sm-6">
+			<a href = "{% url 'all_users' %}">
+              <div class="card card-stats">
+                <div class="card-header card-header-success card-header-icon">
+                  <div class="card-icon" style = "background: #483d8b">
+                    <i class="material-icons">store</i>
+                  </div>
+                  <p class="card-category">New Subscriptions</p>
+                  <h3 class="card-title">+ {{new_subs|length}}</h3>
+                </div>
+                <div class="card-footer">
+                  <div class="stats">
+                    <i class="material-icons">alarm</i>Last 24 Hours
+                  </div>
+                </div>
+              </div>
+			  </a>
+            </div>
+			<div class="col-lg-3 col-md-6 col-sm-6">
+			<a href = "{% url 'all_users' %}">
+              <div class="card card-stats">
+                <div class="card-header card-header-success card-header-icon">
+                  <div class="card-icon" style = "background: #483d8b">
+                    <i class="material-icons">store</i>
+                  </div>
+                  <p class="card-category">Premium Users</p>
+                  <h3 class="card-title">{{premium_users|length}}</h3>
+                </div>
+                <div class="card-footer">
+                  <div class="stats">
+                    <i class="material-icons">alarm</i>All Time
+                  </div>
+                </div>
+              </div>
+			  </a>
+            </div>
+			</div>
           <div class="row">
             <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title ">Subscription</h4>
+              <div class="card" style = "background-color: #f1f1f1;">
+                <div class="card-header card-header-primary" style = "background: #483d8b">
+                  <h4 class="card-title " style = " font-weight: bold">Subscription</h4>
                   <p class="card-category"> List Of All The Active Subscriptions</p>
                 </div>
                 <div class="card-body">
-                  <div class="table-responsive">			  
-                    <table class="table">
+                  <div class="table-responsive" style = "max-height: 200px ;overflow: auto;">			  
+                    <table class="table" >
                       <thead class=" text-primary">
                         <th style="font-weight:bold">
-                          ID
+                          <label class="bmd-label-floating">ID</label>
                         </th>
                         <th style="font-weight:bold">
-                          SUBSRCIPTION NAME
-                        </th>
-                        <th style="font-weight:bold">
-                          TIME PERIOD
-                        </th> 
+                          <label class="bmd-label-floating">Subscription Name</label>
+                        </th>                    
 						<th style="font-weight:bold">
-						  AMOUNT
+						  <label class="bmd-label-floating">Amount</label>
 						</th>
                       </thead>
                       <tbody>
 						{% for element in pop %}
                         <tr>                         
-							<td>								
+							<td>	
+							    <a href = "{% url 'get_subscription' element.id %}" style = "color: black; font-size: 120%; font-family: Georgia, serif;">
 								{{element.id}}
-							</td>
-							<td>								
-								{{element.name}}
-							</td>
-							<td>								
-								{{element.time_period}}
+								</a>
 							</td>
 							<td>
-								{% if element.time_period == 'Monthly' %}
-								{{element.monthly_amount}}
-								{% endif %}
-								
-								{% if element.time_period == 'Yearly' %}
-								{{element.yearly_amount}}
-								{% endif %}
-								
-								{% if element.time_period == 'Both' %}
+								<a href = "{% url 'get_subscription' element.id %}" style = "color: black; font-size: 120%; font-family: Georgia, serif;">
+								{{element.name}}
+								</a>
+							</td>
+							<td>
+								<a href = "{% url 'get_subscription' element.id %}" style = "color: black; font-size: 120%; font-family: Georgia, serif;">
 								Monthly {{element.monthly_amount}} &emsp; Yearly {{element.yearly_amount}}
-								{% endif %}
+								</a>
 							</td>
                         </tr>
 						{% endfor %}

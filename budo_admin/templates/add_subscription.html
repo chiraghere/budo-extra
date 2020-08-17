@@ -31,20 +31,20 @@ The above copyright notice and this permission notice shall be included in all c
 </head>
 
 <body class="">
-  <div class="wrapper ">
-    <div class="sidebar" data-color="purple" data-background-color="white" data-image="../assets/img/sidebar-1.jpg">
+  <div class="wrapper " style = "background: white">
+    <div class="sidebar" style = "background-color: #E6E6FA ">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
         Tip 2: you can also add an image using data-image tag
     -->
-      <div class="logo"><a href="http://www.creative-tim.com" class="simple-text logo-normal">
-          Creative Tim
-        </a></div>
+      <div class="logo" style="  background-color: #E6E6FA">
+	    &emsp;&emsp;&emsp;<img src = "../assets/img/budo_logoblue.png" style= "width: 150px; height:30px; background-color: #E6E6FA">
+      </div>
       <div class="sidebar-wrapper">
-        <ul class="nav">
+        <ul class="nav" style = "font-weight: bold ">
           <li class="nav-item  ">
-            <a class="nav-link" href="./dashboard.html">
+            <a class="nav-link" href="{% url 'dashboard' %}">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
@@ -62,7 +62,7 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link" href="{% url 'subscription' %}">
+            <a class="nav-link" href="{% url 'subscription' %}" style = "background: black; color: white">
               <i class="material-icons">library_books</i>
               <p>Subscription</p>
             </a>
@@ -74,9 +74,9 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="./map.html">
-              <i class="material-icons">location_ons</i>
-              <p>Maps</p>
+            <a class="nav-link" href="{% url 'revenue' %}">
+              <i class="material-icons">store</i>
+              <p>Revenue</p>
             </a>
           </li>
           <li class="nav-item ">
@@ -171,9 +171,9 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-8">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title">Subscription</h4>
+              <div class="card" style = "background-color: #f1f1f1">
+                <div class="card-header card-header-primary" style = "background: #483d8b">
+                  <h4 class="card-title" style = " font-weight: bold">Subscription</h4>
                   <p class="card-category">Create New Subscription</p>
                 </div>
                 <div class="card-body">
@@ -218,24 +218,8 @@ The above copyright notice and this permission notice shall be included in all c
                     <div class="row">
                       <div class="col-md-4">
                         <div class="form-group">
-                          <label class="bmd-label-floating">Task Members (MAX.)</label>
-                          <input type="text" class="form-control" id = "task_members" name = "task_members">
-                        </div>
-                      </div>
-                      <div class="col-md-4">
-                        <div class="form-group">
                           <label class="bmd-label-floating">Storage (mb.)</label>
                           <input type="text" class="form-control" id = "storage" name = "storage">
-                        </div>
-                      </div>
-					  <div class="col-md-12">
-                        <div class="form-group">
-                          <label class="bmd-label-floating" name="time_period" id="time_period">Time Period :</label>&emsp;
-                          <select name="Time Period" id="time_period" name="time_period" class="bmd-label-floating" style="border:0px; outline: 0px">
-							<option value="Monthly" style="border:0px">Monthly</option>
-							<option value="Yearly">Yearly</option>
-							<option value="Both">Both</option>
-						  </select>
                         </div>
                       </div> 
 						<div class="col-md-4">
@@ -251,13 +235,12 @@ The above copyright notice and this permission notice shall be included in all c
                         </div>
                       </div>
                     </div>
-                    <input type="submit" class="btn btn-primary pull-right" value = "Add Subscription">
+                    <input type="submit" class="btn btn-primary pull-right" value = "Add Subscription" style="background-color:#483d8b">
                     <div class="clearfix"></div>
                   </form>
                 </div>
               </div>
-            </div>
-            
+            </div> 
           </div>
         </div>
       </div>

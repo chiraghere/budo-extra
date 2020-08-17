@@ -25,5 +25,5 @@ urlpatterns = [
     path('chat/', include('chat.urls')),
     path('settings/', include('case_settings.urls')),
     path('budo_admin/', include('budo_admin.urls')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

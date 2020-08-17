@@ -31,26 +31,26 @@ The above copyright notice and this permission notice shall be included in all c
 </head>
 
 <body class="">
-  <div class="wrapper ">
-    <div class="sidebar" data-color="purple" data-background-color="white" data-image="../../assets/img/sidebar-1.jpg">
+  <div class="wrapper "style = "background: white">
+    <div class="sidebar"  style = "background-color: #E6E6FA ">
       <!--
         Tip 1: You can change the color of the sidebar using: data-color="purple | azure | green | orange | danger"
 
         Tip 2: you can also add an image using data-image tag
     -->
-      <div class="logo"><a href="http://www.creative-tim.com" class="simple-text logo-normal">
-          Creative Tim
-        </a></div>
-      <div class="sidebar-wrapper">
-        <ul class="nav">
+      <div class="logo" style="  background-color: #E6E6FA">
+	    &emsp;&emsp;&emsp;<img src = "../../assets/img/budo_logoblue.png" style= "width: 150px; height:30px; background-color: #E6E6FA">
+      </div>
+      <div class="sidebar-wrapper"style = "background-color: #E6E6FA ">
+        <ul class="nav" style = "font-weight: bold ">
           <li class="nav-item  ">
-            <a class="nav-link" href="./dashboard.html">
+            <a class="nav-link" href="{% url 'dashboard' %}">
               <i class="material-icons">dashboard</i>
               <p>Dashboard</p>
             </a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link" href="{% url 'get_user_profile' %}">
+            <a class="nav-link" href="{% url 'get_user_profile' %}" style = "background: black; color: white">
               <i class="material-icons">person</i>
               <p>User Profile</p>
             </a>
@@ -74,9 +74,9 @@ The above copyright notice and this permission notice shall be included in all c
             </a>
           </li>
           <li class="nav-item ">
-            <a class="nav-link" href="./map.html">
-              <i class="material-icons">location_ons</i>
-              <p>Maps</p>
+            <a class="nav-link" href="{% url 'revenue' %}" >
+              <i class="material-icons">store</i>
+              <p>Revenue</p>
             </a>
           </li>
           <li class="nav-item ">
@@ -166,38 +166,60 @@ The above copyright notice and this permission notice shall be included in all c
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-12">
-              <div class="card">
-                <div class="card-header card-header-primary">
-                  <h4 class="card-title ">User Details : {{user_info.username}}</h4>
+              <div class="card" style = "background-color: #f1f1f1">
+                <div class="card-header card-header-primary" style = "background: #483d8b">
+                  <h4 class="card-title " style = " font-weight: bold;">User Details : {{user_info.username}}</h4>
                   <p class="card-category"> Complete Details Of The User</p>
                 </div>
                 <div class="card-body">
-                  <div class="table-responsive">
+                  <div class="table-responsive" style = "max-height: 500px ;overflow: auto;">
                     <table class="table">
                       <tbody>
                         <thead class=" text-primary">
-						<label style= "font-weight:bold;">USER INFO</label>
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">USER INFO</label>
                         <th style="font-weight:bold">
-                          ID
+                          <label class="bmd-label-floating">ID</label>
                         </th>
                         <th style="font-weight:bold">
-                          USERNAME
+                          <label class="bmd-label-floating">Username</label>
                         </th>
                         <th style="font-weight:bold">
-                          EMAIL
+                          <label class="bmd-label-floating">Email</label>
                         </th>                
                       </thead>
 					  <tbody>
 						<tr>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{user_info.id}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{user_info.username}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{user_info.email}}
+						  </label>
 						  </td>
+						</tr>
+                      </tbody>
+                    </table>
+					<table class="table">
+                      <tbody>
+                        <thead class=" text-primary">
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">SUBSCRIPTION INFO</label>
+                        <th style="font-weight:bold">
+                          <label class="bmd-label-floating">Subscription Purchased</label>
+                        </th>                             
+                      </thead>
+					  <tbody>
+						<tr>
+						  <td>				
+							<a href = "{% url 'get_subscription' subscription.subscription.id %}" style ="color: black; font-size: 120%; font-family: Georgia, serif;">{{subscription.subscription.name}}</a>
+						  </td>					  
 						</tr>
                       </tbody>
                     </table>
@@ -205,15 +227,17 @@ The above copyright notice and this permission notice shall be included in all c
                       <tbody>
 						{% if profile_info == 'Empty' %}
 						<thead class=" text-primary">
-						<label style= "font-weight:bold;">PROFILE INFO</label>
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">PROFILE INFO</label>
                         <th>
-                          PROFILE
+                          <label class="bmd-label-floating">Profile</label>
                         </th>
 						</thead>
 					  <tbody>
 						<tr>
 						  <td>
-							EMPTY
+							<label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
+							Empty
+						  </label>
 						  </td>
 						</tr>
 					  </tbody>
@@ -221,54 +245,66 @@ The above copyright notice and this permission notice shall be included in all c
 						{% else %}
 						{% if profile_info.private == 'True' %}
 						<thead class=" text-primary">
-						<label style= "font-weight:bold;">PROFILE INFO</label>
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">PROFILE INFO</label>
                         <th>
-                          PROFILE
+                          <label class="bmd-label-floating">Profile</label>
                         </th>
 						</thead>
 					  <tbody>
 						<tr>
 						  <td>
-							PRIVATE
+							<label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
+							Private
+							</label>
 						  </td>
 						</tr>
 					  </tbody>
                     </table>
 						{% else %}
                         <thead class=" text-primary">
-						<label style= "font-weight:bold;">PROFILE INFO</label>
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">PROFILE INFO</label>
                         <th>
-                          FIRST NAME
+                          <label class="bmd-label-floating">First Name</label>
                         </th>
                         <th>
-                          MIDDLE NAME
+                          <label class="bmd-label-floating">Middle Name</label>
                         </th>
                         <th>
-                          LAST NAME
+                          <label class="bmd-label-floating">Last Name</label>
                         </th>
 						<th>
-                          ORGANIZATION
+                          <label class="bmd-label-floating">Organization</label>
                         </th>	
 						<th>
-                          DATE OF BIRTH
+                          <label class="bmd-label-floating">Date Of Birth</label>
                         </th>						
                       </thead>
 					  <tbody>
 						<tr>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{profile_info.first_name}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{profile_info.middle_name}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{profile_info.last_name}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{profile_info.organization}}
+						  </label>
 						  </td>
 						  <td>
+						  <label style ="color: black; font-size: 120%; font-family: Georgia, serif;">
 							{{profile_info.dob}}
+					      </label>
 						  </td>
 						</tr>
                       </tbody>
@@ -278,35 +314,77 @@ The above copyright notice and this permission notice shall be included in all c
 					<table class="table">
                       <tbody>
                         <thead class=" text-primary">
-						<label style= "font-weight:bold;">CASES AS</label>
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">CASE INFO</label>
                         <th>
-                          ADMIN
+                          <label class="bmd-label-floating">Admin</label>
                         </th>
                         <th>
-                          MEMBER
+                          <label class="bmd-label-floating">Member</label>
                         </th>
                         <th>
-                          CLIENT
+                          <label class="bmd-label-floating">Client</label>
                         </th>                
                       </thead>
 					  <tbody>
 						<tr>
 						  <td>
 							{% for entry in user_case_admin %}							
-							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black">{{entry.case_name}}</a></li>
+							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black;font-size: 120%; font-family: Georgia, serif;" >{{entry.case_name}}</a></li>
 							{% endfor %}				  					
 						  </td>
 						  <td>
 							{% for entry in user_case_members %}							
-							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black">{{entry.case_name}}</a></li>
+							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.case_name}}</a></li>
 							{% endfor %}
 						  </td>
 						  <td>
 							{% for entry in user_case_clients %}							
-							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black">{{entry.case_name}}</a></li>
+							  <li><a href = "{% url 'get_case' entry.id %}" style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.case_name}}</a></li>
 							{% endfor %}
 						  </td>
 						</tr>
+                      </tbody>
+                    </table>
+					<table class="table">
+                      <tbody>
+                        <thead class=" text-primary">
+						<label style= "font-weight:bold; font-size: 120%;color: #483d8b">REVENUE - TOTAL : {{revenue}}</label>
+						<th>
+                          <label class="bmd-label-floating">Subscription</label>
+                        </th>  
+                        <th>
+                          <label class="bmd-label-floating">Subscription Purchased</label>
+                        </th>
+                        <th>
+                          <label class="bmd-label-floating">Subscription Expiry</label>
+                        </th>
+						<th>
+                          <label class="bmd-label-floating">Time Period</label>
+                        </th>
+                        <th>
+                          <label class="bmd-label-floating">Bill</label>
+                        </th>                
+                      </thead>
+					  <tbody>
+					  {% for entry in bills %}
+						<tr>
+						  <td>							
+							  <li style ="color:black;font-size: 120%; font-family: Georgia, serif;" >{{entry.subscription.name}}</li>				  					
+						  </td>
+						  <td>							
+							  <li style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.updated_at}}</li>
+						  </td>
+						  <td>							
+							  <li style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.expire}}</li>
+						  </td>
+						  <td>							
+							  <li style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.time_period}}</li>
+						  </td>
+						  <td>							
+							  <li style ="color:black; font-size: 120%; font-family: Georgia, serif;" >{{entry.cost}}</li>
+						  </td>
+						</tr>
+					  {% endfor %}
                       </tbody>
                     </table>
                   </div>

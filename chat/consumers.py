@@ -54,12 +54,14 @@ class ChatConsumer(WebsocketConsumer):
         new_message = data['message']
         new_user_id = data['user']
         user = User.objects.get(pk=new_user_id)
+        print(user)
 
         obj = message.objects.create(content=new_message, chat=self.new_chat, created_by=user)
         obj.save()
         new_id = obj.id
         obj = message.objects.get(pk=new_id)
         serializer = message_serializer(obj)
+        print(serializer.data)
         return self.send_message(serializer.data)
 
     def send_message(self, obj):
